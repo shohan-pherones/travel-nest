@@ -5,6 +5,8 @@ import Wrapper from "../Wrapper";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
+import SearchBar from "../SearchBar";
+import { ModeToggle } from "../mode-toggle";
 
 const Navbar = () => {
   const router = useRouter();
@@ -22,8 +24,10 @@ const Navbar = () => {
             <div className="font-bold text-xl">Travel Nest</div>
           </div>
 
+          <SearchBar />
+
           <div className="flex items-center gap-3">
-            <div>theme</div>
+            <ModeToggle />
             {userId ? (
               <UserButton afterSignOutUrl="/" />
             ) : (
