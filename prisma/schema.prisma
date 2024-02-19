@@ -10,3 +10,79 @@ datasource db {
   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
+
+model Hotel{
+  id String @id @default(uuid())
+  title String
+  description String
+  image String
+  country String
+  state String
+  city String
+  locationDescription String
+  gym Boolean @default(false)
+  spa Boolean @default(false)
+  bar Boolean @default(false)
+  laundry Boolean @default(false)
+  restaurant Boolean @default(false)
+  swimming_pool Boolean @default(false)
+  cineplex Boolean @default(false)
+  free_wifi Boolean @default(false)
+  sports_zone Boolean @default(false)
+  medical_service Boolean @default(false)
+  userId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  rooms Room[]
+  bookings Booking[]
+}
+
+model Room{
+  id String @id @default(uuid())
+  title String
+  description String
+  bed_count Int @default(0)
+  guest_count Int @default(0)
+  bathroom_count Int @default(0)
+  master_bed Int @default(0)
+  queen_bed Int @default(0)
+  image String
+  room_price Int
+  breakfast_price Int
+  tv Boolean @default(false)
+  air_condition Boolean @default(false)
+  fridge Boolean @default(false)
+  balcony Boolean @default(false)
+  ocean_view Boolean @default(false)
+  forest_view Boolean @default(false)
+  mountain_view Boolean @default(false)
+  free_wifi Boolean @default(false)
+  sound_proof Boolean @default(false)
+  room_service Boolean @default(false)
+  hotelId String
+
+  bookings Booking[]
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+}
+
+model Booking{
+  id String @id @default(uuid())
+  userId String
+  user_name String
+  hotelId String
+  roomId String
+  hotel_owner_id String
+  start_date DateTime
+  end_date DateTime
+  breakfast_facility Boolean @default(false)
+  currency String
+  total_price Int
+  payment_status Boolean @default(false)
+  payment_intent_id String @unique
+  bookedAt DateTime @default(now())
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+}
