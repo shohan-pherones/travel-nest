@@ -16,6 +16,10 @@ import {
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Checkbox } from "../ui/checkbox";
+import { useState } from "react";
+import { UploadButton } from "../ui/uploadthing";
+import { useToast } from "../ui/use-toast";
+import Image from "next/image";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -50,6 +54,9 @@ const formSchema = z.object({
 });
 
 const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
+  const [image, setImage] = useState<string | undefined>(hotel?.image);
+  const { toast } = useToast();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -288,6 +295,51 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   />
                 </div>
               </div>
+
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Upload an image</FormLabel>
+                    <FormDescription>Upload a hotel image</FormDescription>
+                    <FormControl>
+                      {image ? (
+                        <div className="relative max-w-[400px] min-w-[400px] max-h-[400px] min-h-[400px] mt-4">
+                          <Image
+                            fill
+                            src={image}
+                            alt="Hotel image"
+                            className="object-contain"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center max-w-[400px] p-12 border-2 border-dashed border-primary/50 rounded mt-4">
+                          <UploadButton
+                            endpoint="imageUploader"
+                            onClientUploadComplete={(res) => {
+                              console.log("Files: ", res);
+                              setImage(res[0].url);
+                              toast({
+                                title: "Upload completed",
+                                description:
+                                  "Your hotel image has been successfully uploaded.",
+                              });
+                            }}
+                            onUploadError={(error: Error) => {
+                              toast({
+                                variant: "destructive",
+                                title: "Image upload failed",
+                                description: error.message,
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
 
             {/* RIGHT */}
