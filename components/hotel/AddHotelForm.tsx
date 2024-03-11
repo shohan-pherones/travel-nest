@@ -20,6 +20,9 @@ import { useState } from "react";
 import { UploadButton } from "../ui/uploadthing";
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
+import { Button } from "../ui/button";
+import { Loader2, XCircle } from "lucide-react";
+import axios from "axios";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -55,6 +58,8 @@ const formSchema = z.object({
 
 const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   const [image, setImage] = useState<string | undefined>(hotel?.image);
+  const [shouldImageDelete, setShouldImageDelete] = useState<boolean>(false);
+
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -83,6 +88,32 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
   }
+
+  const handleImageDelete = (image: string) => {
+    setShouldImageDelete(true);
+    const imageKey = image.substring(image.lastIndexOf("/") + 1);
+
+    axios
+      .post("/api/uploadthing/delete", { imageKey })
+      .then((res) => {
+        if (res.data.success) {
+          setImage("");
+          toast({
+            title: "Image deleted",
+            description: "Your hotel image has been successfully deleted.",
+          });
+        }
+      })
+      .catch(() => {
+        toast({
+          variant: "destructive",
+          title: "Image delete failed",
+        });
+      })
+      .finally(() => {
+        setShouldImageDelete(false);
+      });
+  };
 
   return (
     <div>
@@ -310,8 +341,20 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                             fill
                             src={image}
                             alt="Hotel image"
-                            className="object-contain"
+                            className="object-cover"
                           />
+                          <Button
+                            onClick={() => handleImageDelete(image)}
+                            type="button"
+                            size="icon"
+                            className="absolute right-5 top-5"
+                          >
+                            {shouldImageDelete ? (
+                              <Loader2 color="white" className="animate-spin" />
+                            ) : (
+                              <XCircle color="white" />
+                            )}
+                          </Button>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center max-w-[400px] p-12 border-2 border-dashed border-primary/50 rounded mt-4">
