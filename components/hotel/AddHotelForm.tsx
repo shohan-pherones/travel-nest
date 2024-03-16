@@ -16,13 +16,22 @@ import {
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Checkbox } from "../ui/checkbox";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UploadButton } from "../ui/uploadthing";
 import { useToast } from "../ui/use-toast";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Loader2, XCircle } from "lucide-react";
 import axios from "axios";
+import { useLocation } from "@/hooks/useLocation";
+import { ICity, IState } from "country-state-city";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -59,8 +68,19 @@ const formSchema = z.object({
 const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   const [image, setImage] = useState<string | undefined>(hotel?.image);
   const [shouldImageDelete, setShouldImageDelete] = useState<boolean>(false);
+  const [states, setStates] = useState<IState[]>([]);
+  const [cities, setCities] = useState<ICity[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { toast } = useToast();
+  const {
+    getAllCountries,
+    getCountryStates,
+    getCountryByCode,
+    getStateByCode,
+    getStateCities,
+  } = useLocation();
+  const countries = getAllCountries();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,6 +104,22 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
       medical_service: false,
     },
   });
+
+  useEffect(() => {
+    const selectedCountry = form.watch("country");
+    const selectedState = form.watch("state");
+
+    const countryStates = getCountryStates(selectedCountry);
+    if (countryStates) {
+      setStates(countryStates);
+    }
+
+    const stateCities = getStateCities(selectedCountry, selectedState);
+    if (stateCities) {
+      setCities(stateCities);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.watch("country"), form.watch("state")]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -386,7 +422,80 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
             </div>
 
             {/* RIGHT */}
-            <div className="flex-1 flex flex-col gap-5">Right</div>
+            <div className="flex-1 flex flex-col gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Country</FormLabel>
+                      <FormDescription>
+                        Please select the country where your hotel is located
+                      </FormDescription>
+                      <Select
+                        disabled={isLoading}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger className="bg-background">
+                          <SelectValue
+                            placeholder="Select a Country"
+                            defaultValue={field.value}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem
+                              key={country.isoCode}
+                              value={country.isoCode}
+                            >
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="state"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select State</FormLabel>
+                      <FormDescription>
+                        Please select the state where your hotel is located
+                      </FormDescription>
+                      <Select
+                        disabled={isLoading || !states.length}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger className="bg-background">
+                          <SelectValue
+                            placeholder="Select a State"
+                            defaultValue={field.value}
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {states.map((state) => (
+                            <SelectItem
+                              key={state.isoCode}
+                              value={state.isoCode}
+                            >
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
           </div>
         </form>
       </Form>
