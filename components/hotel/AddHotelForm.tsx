@@ -1,9 +1,24 @@
 "use client";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useLocation } from "@/hooks/useLocation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Hotel, Room } from "@prisma/client";
+import axios from "axios";
+import { ICity, IState } from "country-state-city";
+import { Loader2, Pencil, XCircle } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
 import {
   Form,
   FormControl,
@@ -15,23 +30,8 @@ import {
 } from "../ui/form";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-import { Checkbox } from "../ui/checkbox";
-import { useEffect, useState } from "react";
 import { UploadButton } from "../ui/uploadthing";
 import { useToast } from "../ui/use-toast";
-import Image from "next/image";
-import { Button } from "../ui/button";
-import { Loader2, XCircle } from "lucide-react";
-import axios from "axios";
-import { useLocation } from "@/hooks/useLocation";
-import { ICity, IState } from "country-state-city";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -104,6 +104,17 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
       medical_service: false,
     },
   });
+
+  useEffect(() => {
+    if (typeof image === "string") {
+      form.setValue("image", image, {
+        shouldDirty: true,
+        shouldTouch: true,
+        shouldValidate: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [image]);
 
   useEffect(() => {
     const selectedCountry = form.watch("country");
@@ -494,6 +505,84 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                     </FormItem>
                   )}
                 />
+              </div>
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Select City</FormLabel>
+                    <FormDescription>
+                      Please select the city where your hotel is located
+                    </FormDescription>
+                    <Select
+                      disabled={isLoading}
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      defaultValue={field.value}
+                    >
+                      <SelectTrigger className="bg-background">
+                        <SelectValue
+                          placeholder="Select a City"
+                          defaultValue={field.value}
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cities.map((city) => (
+                          <SelectItem key={city.name} value={city.name}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="locationDescription"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location description</FormLabel>
+                    <FormDescription>
+                      Enter your location description
+                    </FormDescription>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Describe your location"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-between gap-2 flex-wrap">
+                {hotel ? (
+                  <Button className="flex items-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4" /> Updating
+                      </>
+                    ) : (
+                      <>
+                        <Pencil className="h-4 w-4" /> Update
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <Button className="flex items-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4" /> Creating
+                      </>
+                    ) : (
+                      <>
+                        <Pencil className="h-4 w-4" /> Create
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
