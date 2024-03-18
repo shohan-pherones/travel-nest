@@ -32,6 +32,7 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { UploadButton } from "../ui/uploadthing";
 import { useToast } from "../ui/use-toast";
+import { useRouter } from "next/navigation";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -72,6 +73,8 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   const [cities, setCities] = useState<ICity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const router = useRouter();
+
   const { toast } = useToast();
   const {
     getAllCountries,
@@ -84,7 +87,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: hotel || {
       title: "",
       description: "",
       image: "",
@@ -133,7 +136,47 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   }, [form.watch("country"), form.watch("state")]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+    setIsLoading(true);
+
+    if (hotel) {
+      axios
+        .patch(`/api/hotel/${hotel.id}`, values)
+        .then((res) => {
+          toast({
+            title: "Hotel updated!",
+            description: "Your hotel is successfully updated.",
+          });
+          router.push(`/hotel/${res.data.id}`);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          toast({
+            variant: "destructive",
+            description: "Something went wrong.",
+          });
+          setIsLoading(false);
+        });
+    } else {
+      axios
+        .post("/api/hotel", values)
+        .then((res) => {
+          toast({
+            title: "Hotel created!",
+            description: "Your hotel is successfully created.",
+          });
+          router.push(`/hotel/${res.data.id}`);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.log(err);
+          toast({
+            variant: "destructive",
+            description: "Something went wrong.",
+          });
+          setIsLoading(false);
+        });
+    }
   }
 
   const handleImageDelete = (image: string) => {
@@ -562,7 +605,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   <Button className="flex items-center gap-2">
                     {isLoading ? (
                       <>
-                        <Loader2 className="h-4 w-4" /> Updating
+                        <Loader2 className="h-4 w-4 animate-spin" /> Updating
                       </>
                     ) : (
                       <>
@@ -574,7 +617,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   <Button className="flex items-center gap-2">
                     {isLoading ? (
                       <>
-                        <Loader2 className="h-4 w-4" /> Creating
+                        <Loader2 className="h-4 w-4 animate-spin" /> Creating
                       </>
                     ) : (
                       <>
