@@ -33,3 +33,31 @@ export async function PATCH(
     return new NextResponse("Internal server error", { status: 500 });
   }
 }
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: { hotelId: string } }
+) {
+  try {
+    const { userId } = auth();
+
+    if (!params.hotelId) {
+      return new NextResponse("Hotel id is required.", { status: 400 });
+    }
+
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const hotel = await prisma.hotel.delete({
+      where: {
+        id: params.hotelId,
+      },
+    });
+
+    return NextResponse.json(hotel);
+  } catch (error) {
+    console.log("ERR at /api/hotel/hotelId DELETE", error);
+    return new NextResponse("Internal server error", { status: 500 });
+  }
+}

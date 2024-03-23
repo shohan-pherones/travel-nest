@@ -72,6 +72,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isHotelDeleting, setIsHotelDeleting] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -203,6 +204,31 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
       .finally(() => {
         setShouldImageDelete(false);
       });
+  };
+
+  const handleDeleteHotel = async (hotel: HotelWithRooms) => {
+    setIsHotelDeleting(true);
+    const getImageKey = (src: string) =>
+      src.substring(src.lastIndexOf("/") + 1);
+
+    try {
+      const imageKey = getImageKey(hotel.image);
+      await axios.post("/api/uploadthing/delete", { imageKey });
+      await axios.delete(`/api/hotel/${hotel.id}`);
+
+      setIsHotelDeleting(false);
+      router.push("/hotel/new");
+
+      toast({
+        title: "Hotel deleted",
+        description: "Your hotel has been successfully deleted.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: `Hotel delete failed: ${error.message}`,
+      });
+    }
   };
 
   return (
@@ -601,8 +627,34 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                 )}
               />
               <div className="flex justify-between gap-2 flex-wrap">
+                {hotel && (
+                  <Button
+                    onClick={() => handleDeleteHotel(hotel)}
+                    variant="destructive"
+                    type="button"
+                    className="flex items-center gap-2"
+                  >
+                    {isHotelDeleting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Deleting
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </Button>
+                )}
+
+                {hotel && (
+                  <Button
+                    onClick={() => router.push(`/hotel-details/${hotel.id}`)}
+                    variant="outline"
+                  >
+                    View Details
+                  </Button>
+                )}
+
                 {hotel ? (
-                  <Button className="flex items-center gap-2">
+                  <Button type="submit" className="flex items-center gap-2">
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" /> Updating
@@ -614,7 +666,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                     )}
                   </Button>
                 ) : (
-                  <Button className="flex items-center gap-2">
+                  <Button type="submit" className="flex items-center gap-2">
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" /> Creating
