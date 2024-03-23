@@ -12,13 +12,23 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Hotel, Room } from "@prisma/client";
 import axios from "axios";
 import { ICity, IState } from "country-state-city";
-import { Loader2, Pencil, XCircle } from "lucide-react";
+import { Loader2, Pencil, Plus, Terminal, XCircle } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
 import {
   Form,
   FormControl,
@@ -32,7 +42,6 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { UploadButton } from "../ui/uploadthing";
 import { useToast } from "../ui/use-toast";
-import { useRouter } from "next/navigation";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -73,6 +82,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   const [cities, setCities] = useState<ICity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isHotelDeleting, setIsHotelDeleting] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
 
   const router = useRouter();
 
@@ -626,6 +636,17 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   </FormItem>
                 )}
               />
+
+              {hotel && !hotel.rooms.length && (
+                <Alert className="bg-sky-600 text-white">
+                  <Terminal className="h-4 w-4 stroke-white" />
+                  <AlertTitle>Last step!</AlertTitle>
+                  <AlertDescription>
+                    Just you need to add some rooms to your hotel.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <div className="flex justify-between gap-2 flex-wrap">
                 {hotel && (
                   <Button
@@ -651,6 +672,24 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   >
                     View Details
                   </Button>
+                )}
+
+                {hotel && (
+                  <Dialog open={open} onOpenChange={setOpen}>
+                    <DialogTrigger>
+                      <Button type="button" variant="outline">
+                        <Plus className="mr-2 h-4 w-4" /> Add Room
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add a Room</DialogTitle>
+                        <DialogDescription>
+                          Add a room details carefully for your hotel.
+                        </DialogDescription>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
                 )}
 
                 {hotel ? (
