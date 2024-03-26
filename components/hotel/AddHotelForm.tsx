@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import AddRoomForm from "../room/AddRoomForm";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
@@ -87,6 +88,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
   const router = useRouter();
 
   const { toast } = useToast();
+
   const {
     getAllCountries,
     getCountryStates,
@@ -266,6 +268,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   </FormItem>
                 )}
               />
+
               {/* DESCRIPTION */}
               <FormField
                 control={form.control}
@@ -283,6 +286,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   </FormItem>
                 )}
               />
+
               {/* FACILITIES */}
               <div>
                 <FormLabel>Choose facilities</FormLabel>
@@ -617,6 +621,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="locationDescription"
@@ -681,19 +686,27 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                         <Plus className="mr-2 h-4 w-4" /> Add Room
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="max-w-5xl">
                       <DialogHeader>
                         <DialogTitle>Add a Room</DialogTitle>
                         <DialogDescription>
                           Add a room details carefully for your hotel.
                         </DialogDescription>
                       </DialogHeader>
+                      <AddRoomForm
+                        hotel={hotel}
+                        handleDialogueOpen={() => setOpen((prev) => !prev)}
+                      />
                     </DialogContent>
                   </Dialog>
                 )}
 
                 {hotel ? (
-                  <Button type="submit" className="flex items-center gap-2">
+                  <Button
+                    disabled={isLoading}
+                    type="submit"
+                    className="flex items-center gap-2"
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" /> Updating
@@ -705,7 +718,11 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                     )}
                   </Button>
                 ) : (
-                  <Button type="submit" className="flex items-center gap-2">
+                  <Button
+                    disabled={isLoading}
+                    type="submit"
+                    className="flex items-center gap-2"
+                  >
                     {isLoading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" /> Creating

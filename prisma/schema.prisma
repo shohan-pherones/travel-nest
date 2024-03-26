@@ -46,6 +46,7 @@ model Room{
   guest_count Int @default(0)
   bathroom_count Int @default(0)
   master_bed Int @default(0)
+  king_bed Int @default(0)
   queen_bed Int @default(0)
   image String
   room_price Int
