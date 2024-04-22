@@ -80,6 +80,7 @@ const AddRoomForm = ({ hotel, room, handleDialogueOpen }: AddRoomFormProps) => {
       bathroom_count: 0,
       master_bed: 0,
       queen_bed: 0,
+      king_bed: 0,
       image: "",
       room_price: 0,
       breakfast_price: 0,
@@ -585,9 +586,9 @@ const AddRoomForm = ({ hotel, room, handleDialogueOpen }: AddRoomFormProps) => {
           <div className="pt-4 pb-2">
             {room ? (
               <Button
-                disabled={isLoading}
                 type="button"
-                onClick={() => form.handleSubmit(onSubmit)}
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={isLoading}
                 className="flex items-center gap-2"
               >
                 {isLoading ? (
@@ -602,9 +603,9 @@ const AddRoomForm = ({ hotel, room, handleDialogueOpen }: AddRoomFormProps) => {
               </Button>
             ) : (
               <Button
-                disabled={isLoading}
                 type="button"
-                onClick={() => form.handleSubmit(onSubmit)}
+                onClick={form.handleSubmit(onSubmit)}
+                disabled={isLoading}
                 className="flex items-center gap-2"
               >
                 {isLoading ? (

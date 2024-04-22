@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Hotel, Room } from "@prisma/client";
 import axios from "axios";
 import { ICity, IState } from "country-state-city";
-import { Loader2, Pencil, Plus, Terminal, XCircle } from "lucide-react";
+import { Loader2, Pencil, Terminal, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import AddRoomForm from "../room/AddRoomForm";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import { Button } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import {
   Dialog,
@@ -672,6 +672,7 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
 
                 {hotel && (
                   <Button
+                    type="button"
                     onClick={() => router.push(`/hotel-details/${hotel.id}`)}
                     variant="outline"
                   >
@@ -681,10 +682,8 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
 
                 {hotel && (
                   <Dialog open={open} onOpenChange={setOpen}>
-                    <DialogTrigger>
-                      <Button type="button" variant="outline">
-                        <Plus className="mr-2 h-4 w-4" /> Add Room
-                      </Button>
+                    <DialogTrigger className={buttonVariants()}>
+                      Add a Room
                     </DialogTrigger>
                     <DialogContent className="max-w-5xl">
                       <DialogHeader>
