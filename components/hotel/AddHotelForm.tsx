@@ -43,6 +43,7 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { UploadButton } from "../ui/uploadthing";
 import { useToast } from "../ui/use-toast";
+import RoomCard from "../room/RoomCard";
 
 interface AddHotelFormProps {
   hotel: HotelWithRooms | null;
@@ -734,6 +735,17 @@ const AddHotelForm = ({ hotel }: AddHotelFormProps) => {
                   </Button>
                 )}
               </div>
+
+              {hotel && !!hotel.rooms.length && (
+                <div>
+                  <h3 className="text-lg font-semibold my-5">Hotel Rooms</h3>
+                  <div className="grid grid-cols-1 2xl:grid-cols-2 gap-5">
+                    {hotel.rooms.map((room) => (
+                      <RoomCard key={room.id} hotel={hotel} room={room} />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </form>
