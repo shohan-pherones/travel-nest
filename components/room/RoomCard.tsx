@@ -5,6 +5,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "../ui/card";
@@ -13,12 +14,33 @@ import {
   Bath,
   Bed,
   BedDouble,
+  Fan,
   Home,
+  Loader2,
+  MicOff,
+  Mountain,
+  Refrigerator,
+  Trash,
+  Trees,
   Tv,
   Users,
   UtensilsCrossed,
+  Waves,
   Wifi,
 } from "lucide-react";
+import { Separator } from "../ui/separator";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Button, buttonVariants } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import AddRoomForm from "./AddRoomForm";
 
 interface RoomCardProps {
   hotel?: Hotel & {
@@ -29,6 +51,15 @@ interface RoomCardProps {
 }
 
 const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
+  const [open, setOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const pathname = usePathname();
+  const isHotelDetailsPage = pathname.includes("hotel-details");
+
+  const handleRoomDelete = (room: Room) => {
+    setIsLoading(true);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -88,8 +119,101 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
               Free Wi-Fi
             </span>
           )}
+          {room.air_condition && (
+            <span className="flex items-center gap-2">
+              <Fan className="h-4 w-4" />
+              Air Condition
+            </span>
+          )}
+          {room.fridge && (
+            <span className="flex items-center gap-2">
+              <Refrigerator className="h-4 w-4" />
+              Fridge
+            </span>
+          )}
+          {room.ocean_view && (
+            <span className="flex items-center gap-2">
+              <Waves className="h-4 w-4" />
+              Ocean View
+            </span>
+          )}
+          {room.forest_view && (
+            <span className="flex items-center gap-2">
+              <Trees className="h-4 w-4" />
+              Forest View
+            </span>
+          )}
+          {room.mountain_view && (
+            <span className="flex items-center gap-2">
+              <Mountain className="h-4 w-4" />
+              Mountain View
+            </span>
+          )}
+          {room.sound_proof && (
+            <span className="flex items-center gap-2">
+              <MicOff className="h-4 w-4" />
+              Soundproofed
+            </span>
+          )}
         </div>
+        <Separator />
+        <div className="flex gap-5 justify-between">
+          <div>
+            Room Price: <span className="font-bold">${room.room_price}</span>
+            <span className="text-xs"> /24hrs</span>
+          </div>
+          {!!room.breakfast_price && (
+            <div>
+              Breakfast Price:{" "}
+              <span className="font-bold">${room.breakfast_price}</span>
+            </div>
+          )}
+        </div>
+        <Separator />
       </CardContent>
+      <CardFooter>
+        {isHotelDetailsPage ? (
+          <div>Hotel Details Page</div>
+        ) : (
+          <div className="flex w-full justify-between">
+            <Button
+              disabled={isLoading}
+              type="button"
+              variant="destructive"
+              onClick={() => handleRoomDelete(room)}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting
+                </>
+              ) : (
+                <>
+                  <Trash className="mr-2 h-4 w-4" /> Delete
+                </>
+              )}
+            </Button>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger className={buttonVariants()}>
+                Update Room
+              </DialogTrigger>
+              <DialogContent className="max-w-5xl">
+                <DialogHeader>
+                  <DialogTitle>Update Room</DialogTitle>
+                  <DialogDescription>
+                    Update room details carefully for your hotel.
+                  </DialogDescription>
+                </DialogHeader>
+                <AddRoomForm
+                  room={room}
+                  hotel={hotel}
+                  handleDialogueOpen={() => setOpen((prev) => !prev)}
+                />
+              </DialogContent>
+            </Dialog>
+          </div>
+        )}
+      </CardFooter>
     </Card>
   );
 };
