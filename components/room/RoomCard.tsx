@@ -29,7 +29,7 @@ import {
   Wifi,
 } from "lucide-react";
 import { Separator } from "../ui/separator";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button, buttonVariants } from "../ui/button";
 import {
@@ -41,6 +41,8 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 import AddRoomForm from "./AddRoomForm";
+import axios from "axios";
+import { toast } from "../ui/use-toast";
 
 interface RoomCardProps {
   hotel?: Hotel & {
@@ -53,11 +55,43 @@ interface RoomCardProps {
 const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const router = useRouter();
+
   const pathname = usePathname();
   const isHotelDetailsPage = pathname.includes("hotel-details");
 
   const handleRoomDelete = (room: Room) => {
     setIsLoading(true);
+    const imageKey = room.image.substring(room.image.lastIndexOf("/") + 1);
+
+    axios
+      .post("/api/uploadthing/delete", { imageKey })
+      .then(() => {
+        axios
+          .delete(`/api/room/${room.id}`)
+          .then(() => {
+            router.refresh();
+            toast({
+              description: "Room Deleted!",
+            });
+            setIsLoading(false);
+          })
+          .catch(() => {
+            toast({
+              variant: "destructive",
+              description: "Something went wrong!",
+            });
+            setIsLoading(false);
+          });
+      })
+      .catch(() => {
+        toast({
+          variant: "destructive",
+          description: "Something went wrong!",
+        });
+        setIsLoading(false);
+      });
   };
 
   return (
