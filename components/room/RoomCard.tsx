@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button, buttonVariants } from "../ui/button";
 import {
   Dialog,
@@ -43,6 +43,10 @@ import {
 import AddRoomForm from "./AddRoomForm";
 import axios from "axios";
 import { toast } from "../ui/use-toast";
+import { DatePickerWithRange } from "./DateRangePicker";
+import { DateRange } from "react-day-picker";
+import { differenceInCalendarDays } from "date-fns";
+import { Checkbox } from "../ui/checkbox";
 
 interface RoomCardProps {
   hotel?: Hotel & {
@@ -55,11 +59,35 @@ interface RoomCardProps {
 const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [date, setDate] = useState<DateRange | undefined>();
+  const [totalPrice, setTotalPrice] = useState(room.room_price);
+  const [includeBreakfast, setIncludeBreakfast] = useState<boolean>(false);
+  const [days, setDays] = useState<number>(1);
 
   const router = useRouter();
 
   const pathname = usePathname();
   const isHotelDetailsPage = pathname.includes("hotel-details");
+
+  useEffect(() => {
+    if (date && date.from && date.to) {
+      const dayCount = differenceInCalendarDays(date.to, date.from);
+
+      setDays(dayCount);
+
+      if (dayCount && room.room_price) {
+        if (includeBreakfast && room.breakfast_price) {
+          setTotalPrice(
+            dayCount * room.room_price + dayCount * room.breakfast_price
+          );
+        } else {
+          setTotalPrice(dayCount * room.room_price);
+        }
+      } else {
+        setTotalPrice(room.room_price);
+      }
+    }
+  }, [date, room.room_price, includeBreakfast, room.breakfast_price]);
 
   const handleRoomDelete = (room: Room) => {
     setIsLoading(true);
@@ -207,7 +235,30 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
       </CardContent>
       <CardFooter>
         {isHotelDetailsPage ? (
-          <div>Hotel Details Page</div>
+          <div className="flex flex-col gap-5">
+            <div>
+              <div className="mb-2">
+                Select days that you will spend in this room
+              </div>
+              <DatePickerWithRange date={date} setDate={setDate} />
+            </div>
+            {room.breakfast_price > 0 && (
+              <div>
+                <div className="mb-2">Do you want breakfast each day?</div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="breakfast"
+                    onCheckedChange={(value) => setIncludeBreakfast(!!value)}
+                  />
+                  <label htmlFor="breakfast">Include Breakfast</label>
+                </div>
+              </div>
+            )}
+            <div>
+              Total Price: <span className="font-bold">${totalPrice}</span> for{" "}
+              <span className="font-bold">{days} days</span>
+            </div>
+          </div>
         ) : (
           <div className="flex w-full justify-between">
             <Button
