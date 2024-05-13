@@ -25,6 +25,7 @@ import {
   Tv,
   Users,
   UtensilsCrossed,
+  Wand2,
   Waves,
   Wifi,
 } from "lucide-react";
@@ -47,6 +48,8 @@ import { DatePickerWithRange } from "./DateRangePicker";
 import { DateRange } from "react-day-picker";
 import { differenceInCalendarDays } from "date-fns";
 import { Checkbox } from "../ui/checkbox";
+import { useAuth } from "@clerk/nextjs";
+import useBookRoom from "@/hooks/useBookRoom";
 
 interface RoomCardProps {
   hotel?: Hotel & {
@@ -59,12 +62,16 @@ interface RoomCardProps {
 const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
   const [open, setOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isBookingLoading, setIsBookingLoading] = useState<boolean>(false);
   const [date, setDate] = useState<DateRange | undefined>();
   const [totalPrice, setTotalPrice] = useState(room.room_price);
   const [includeBreakfast, setIncludeBreakfast] = useState<boolean>(false);
   const [days, setDays] = useState<number>(1);
+  const { setRoomData, paymentIntent, setClientSecret, setPaymentIntent } =
+    useBookRoom();
 
   const router = useRouter();
+  const { userId } = useAuth();
 
   const pathname = usePathname();
   const isHotelDetailsPage = pathname.includes("hotel-details");
@@ -120,6 +127,41 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
         });
         setIsLoading(false);
       });
+  };
+
+  const handleBookRoom = () => {
+    if (!userId) {
+      return toast({
+        variant: "destructive",
+        description: "You need to log in!",
+      });
+    }
+
+    if (!hotel?.userId) {
+      return toast({
+        variant: "destructive",
+        description: "Something went wrong!",
+      });
+    }
+
+    if (date?.from && date?.to) {
+      setIsBookingLoading(true);
+
+      const bookingRoomData = {
+        room,
+        totalPrice,
+        breakfastIncluded: includeBreakfast,
+        startDate: date.from,
+        endDate: date.to,
+      };
+
+      setRoomData(bookingRoomData);
+    } else {
+      return toast({
+        variant: "destructive",
+        description: "Pick dates!",
+      });
+    }
   };
 
   return (
@@ -258,6 +300,18 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
               Total Price: <span className="font-bold">${totalPrice}</span> for{" "}
               <span className="font-bold">{days} days</span>
             </div>
+            <Button
+              onClick={() => handleBookRoom()}
+              disabled={isBookingLoading}
+              type="button"
+            >
+              {isBookingLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Wand2 className="mr-2 h-4 w-4" />
+              )}
+              {isBookingLoading ? "Loading..." : "Book Room"}
+            </Button>
           </div>
         ) : (
           <div className="flex w-full justify-between">
