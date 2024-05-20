@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const bookingData = {
     ...booking,
     user_name: user.firstName,
-    user_email: user.emailAddresses,
+    user_email: user.emailAddresses[0],
     userId: user.id,
     currency: "usd",
     payment_intent_id,
