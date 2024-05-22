@@ -1,15 +1,10 @@
 "use client";
 
+import useBookRoom from "@/hooks/useBookRoom";
+import { useAuth } from "@clerk/nextjs";
 import { Booking, Hotel, Room } from "@prisma/client";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../ui/card";
-import Image from "next/image";
+import axios from "axios";
+import { differenceInCalendarDays } from "date-fns";
 import {
   Bath,
   Bed,
@@ -29,10 +24,20 @@ import {
   Waves,
   Wifi,
 } from "lucide-react";
-import { Separator } from "../ui/separator";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { DateRange } from "react-day-picker";
 import { Button, buttonVariants } from "../ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Checkbox } from "../ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -41,15 +46,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import AddRoomForm from "./AddRoomForm";
-import axios from "axios";
+import { Separator } from "../ui/separator";
 import { toast } from "../ui/use-toast";
+import AddRoomForm from "./AddRoomForm";
 import { DatePickerWithRange } from "./DateRangePicker";
-import { DateRange } from "react-day-picker";
-import { differenceInCalendarDays } from "date-fns";
-import { Checkbox } from "../ui/checkbox";
-import { useAuth } from "@clerk/nextjs";
-import useBookRoom from "@/hooks/useBookRoom";
 
 interface RoomCardProps {
   hotel?: Hotel & {
@@ -164,13 +164,13 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
         },
         body: JSON.stringify({
           booking: {
-            hotelOwnerId: hotel.userId,
+            hotel_owner_id: hotel.userId,
             hotelId: hotel.id,
             roomId: room.id,
-            startDate: date.from,
-            endDate: date.to,
-            breakfaseIncluded: includeBreakfast,
-            totalPrice,
+            start_date: date.from,
+            end_date: date.to,
+            breakfast_facility: includeBreakfast,
+            total_price: totalPrice,
           },
           payment_intent_id: paymentIntentId,
         }),
@@ -190,7 +190,6 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
           router.push("/book-room");
         })
         .catch((error: any) => {
-          console.log(error);
           toast({
             variant: "destructive",
             description: error.message,
