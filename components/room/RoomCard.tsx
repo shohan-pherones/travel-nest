@@ -4,7 +4,7 @@ import useBookRoom from "@/hooks/useBookRoom";
 import { useAuth } from "@clerk/nextjs";
 import { Booking, Hotel, Room } from "@prisma/client";
 import axios from "axios";
-import { differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays, eachDayOfInterval } from "date-fns";
 import {
   Bath,
   Bed,
@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DateRange } from "react-day-picker";
 import { Button, buttonVariants } from "../ui/button";
 import {
@@ -95,6 +95,25 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
       }
     }
   }, [date, room.room_price, includeBreakfast, room.breakfast_price]);
+
+  const disabledDates = useMemo(() => {
+    let dates: Date[] = [];
+
+    const roomBookings = bookings.filter(
+      (booking) => booking.roomId === room.id
+    );
+
+    roomBookings.forEach((booking) => {
+      const range = eachDayOfInterval({
+        start: new Date(booking.start_date),
+        end: new Date(booking.end_date),
+      });
+
+      dates = [...dates, ...range];
+    });
+
+    return dates;
+  }, [bookings, room.id]);
 
   const handleRoomDelete = (room: Room) => {
     setIsLoading(true);
@@ -321,7 +340,11 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
               <div className="mb-2">
                 Select days that you will spend in this room
               </div>
-              <DatePickerWithRange date={date} setDate={setDate} />
+              <DatePickerWithRange
+                date={date}
+                setDate={setDate}
+                disabledDates={disabledDates}
+              />
             </div>
             {room.breakfast_price > 0 && (
               <div>
