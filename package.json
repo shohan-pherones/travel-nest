@@ -21,6 +21,8 @@
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-toast": "^1.1.5",
+    "@stripe/react-stripe-js": "^2.7.1",
+    "@stripe/stripe-js": "^3.4.1",
     "@uploadthing/react": "^6.3.2",
     "axios": "^1.6.7",
     "class-variance-authority": "^0.7.0",
