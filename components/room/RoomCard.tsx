@@ -101,7 +101,7 @@ const RoomCard = ({ hotel, room, bookings = [] }: RoomCardProps) => {
     let dates: Date[] = [];
 
     const roomBookings = bookings.filter(
-      (booking) => booking.roomId === room.id
+      (booking) => booking.roomId === room.id && booking.payment_status
     );
 
     roomBookings.forEach((booking) => {
