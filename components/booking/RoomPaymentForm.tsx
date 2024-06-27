@@ -14,10 +14,49 @@ import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { useToast } from "../ui/use-toast";
+import { Booking } from "@prisma/client";
+import { endOfDay, isWithinInterval, startOfDay } from "date-fns";
 
 interface Props {
   clientSecret: string;
   handlePaymentSuccess: (value: boolean) => void;
+}
+
+type DateRangesType = {
+  startDate: Date;
+  endDate: Date;
+};
+
+function hasOverlap(
+  startDate: Date,
+  endDate: Date,
+  dateRanges: DateRangesType[]
+) {
+  const targetInterval = {
+    start: startOfDay(new Date(startDate)),
+    end: endOfDay(new Date(endDate)),
+  };
+
+  for (const range of dateRanges) {
+    const rangeStart = startOfDay(new Date(range.startDate));
+    const rangeEnd = endOfDay(new Date(range.endDate));
+
+    if (
+      isWithinInterval(targetInterval.start, {
+        start: rangeStart,
+        end: rangeEnd,
+      }) ||
+      isWithinInterval(targetInterval.end, {
+        start: rangeStart,
+        end: rangeEnd,
+      }) ||
+      (targetInterval.start < rangeStart && targetInterval.end > rangeEnd)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 const RoomPaymentForm = ({ clientSecret, handlePaymentSuccess }: Props) => {
@@ -51,6 +90,33 @@ const RoomPaymentForm = ({ clientSecret, handlePaymentSuccess }: Props) => {
     }
 
     try {
+      // date overlaps
+      const bookings = await axios.get(
+        `/api/booking/${bookedRoomData.room.id}`
+      );
+
+      const roomBookingDates = bookings.data.map((booking: Booking) => {
+        return {
+          startDate: booking.start_date,
+          endDate: booking.end_date,
+        };
+      });
+
+      const overlapFound = hasOverlap(
+        bookedRoomData.startDate,
+        bookedRoomData.endDate,
+        roomBookingDates
+      );
+
+      if (overlapFound) {
+        setIsLoading(false);
+        return toast({
+          variant: "destructive",
+          description:
+            "Some of the days are trying to book already been reserved.",
+        });
+      }
+
       stripe
         .confirmPayment({ elements, redirect: "if_required" })
         .then((result) => {
