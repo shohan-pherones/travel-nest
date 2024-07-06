@@ -167,8 +167,8 @@ const RoomPaymentForm = ({ clientSecret, handlePaymentSuccess }: Props) => {
         <Separator />
         <div className="flex flex-col gap-2">
           <h2 className="font-semibold mb-2 text-lg">Your Booking Summary</h2>
-          <p>You will check-in on {startDate} at 10AM</p>
-          <p>You will check-out on {endDate} at 10AM</p>
+          <p>You will check-in on {startDate} at 12PM</p>
+          <p>You will check-out on {endDate} at 12PM</p>
           {bookedRoomData?.breakfastIncluded && (
             <p>You will be served breakfast each day at 8AM</p>
           )}

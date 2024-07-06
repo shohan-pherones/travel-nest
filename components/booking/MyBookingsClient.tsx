@@ -11,6 +11,7 @@ import {
   BedDouble,
   Fan,
   Home,
+  MapPin,
   MicOff,
   Mountain,
   Refrigerator,
@@ -25,10 +26,12 @@ import moment from "moment";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "../ui/card";
@@ -137,8 +140,24 @@ const MyBookingsClient: React.FC<MyBookingsClientProps> = ({ booking }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{Room.title}</CardTitle>
-        <CardDescription>{Room.description}</CardDescription>
+        <CardTitle>{Hotel.title}</CardTitle>
+        <CardDescription>
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span>
+              {Hotel.city}
+              {Hotel.city && ", "}
+              {country?.name}
+            </span>
+          </div>
+          <div className="text-primary/50 py-2">
+            {Hotel.description.substring(0, 50)}...
+          </div>
+        </CardDescription>
+        <CardTitle className="text-lg">{Room.title}</CardTitle>
+        <CardDescription>
+          {Room.description.substring(0, 50)}...
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-5">
         <div className="aspect-square overflow-hidden h-[200px] relative rounded-lg">
@@ -244,7 +263,44 @@ const MyBookingsClient: React.FC<MyBookingsClientProps> = ({ booking }) => {
           )}
         </div>
         <Separator />
+        <div className="flex flex-col gap-2">
+          <CardTitle className="text-lg">Booking Details</CardTitle>
+          <div className="text-primary/50">
+            <p>
+              Room booked by {booking.user_name} for {dayCount} days -{" "}
+              {moment(booking.bookedAt).fromNow()}
+            </p>
+            <p>Check-in: {startDate} at 12PM</p>
+            <p>Check-out: {endDate} at 12PM</p>
+            {booking.breakfast_facility && (
+              <p>Breakfast will be served at 8AM</p>
+            )}
+            {booking.payment_status ? (
+              <p className="text-teal-500">
+                Paid ${booking.total_price} - Room reserved
+              </p>
+            ) : (
+              <p className="text-rose-500">
+                Unpaid ${booking.total_price} - Room not reserved
+              </p>
+            )}
+          </div>
+        </div>
       </CardContent>
+      <CardFooter className="flex items-center justify-between">
+        <Button
+          disabled={isBookingLoading}
+          variant="outline"
+          onClick={() => router.push(`/hotel-details/${Hotel.id}`)}
+        >
+          View Hotel
+        </Button>
+        {!booking.payment_status && booking.userId === userId && (
+          <Button disabled={isBookingLoading} onClick={() => handleBookRoom()}>
+            {isBookingLoading ? "Processing..." : "Pay Now"}
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };
